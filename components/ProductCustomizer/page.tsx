@@ -234,47 +234,96 @@ const handleCheckout = async () => {
 
 
 <div className="max-[640px]:overflow-x-auto">
- <div className="flex mb-4 max-[640px]:w-[557px]">
-          {[
-            { key: "productId", step:"Step 01",  label: "Choose Product", options: products , icon:"/images/icon-menu-gobelets.svg" },
-            { key: "templateId",  step:"Step 02",  label: "Choose Template", options: templates , icon:"/images/icon-menu-deco.svg"},
-            { key: "patternId",  step:"Step 03",  label: "Choose Pattern", options: pattern , icon:"/images/icon-menu-themes.svg"},
-          ].map((item) => (
-            <>
-        
-           <div style={{
-            color:"#000"
-           }}>
-              {item?.step}<sup 
- style={{
-  color:"red"
- }}
- >
-  {item?.step === "Step 01" ? " *" : item?.step === "Step 02" ? " (Optional)" : item?.step === "Step 03" ? " (Optional)" : ""}
-   
- 
- 
- </sup>
-             <div
-              key={item.key}
-              onClick={() => setActiveOption(item.key)}
-              className={`p-2 mr-2 rounded cursor-pointer ${
-                activeOption === item.key ? "activeColor" : "defaultColor"
-              }`}
-              style={{ display: "flex", alignItems: "center", gap: "8px" , fontSize:'14px' }}
-              >
-             
-              <Image src={item?.icon} alt="" height={60} width={60} color="#fff"
-              className={`p-2 mr-2 rounded cursor-pointer ${
-                activeOption === item.key ? "activeImg" : "defaultImg"
-              }`}
-              />
-              {item.label}
-            </div>
-           </div>
-              </>
-          ))}
-        </div>
+<div className="flex mb-4 max-[640px]:w-[557px]">
+  {[
+    {
+      key: "productId",
+      step: "Step 01",
+      label: "Choose Product",
+      options: products,
+      icon: "/images/icon-menu-gobelets.svg",
+      disabled: false,
+    },
+    {
+      key: "templateId",
+      step: "Step 02",
+      label: "Choose Template",
+      options: templates,
+      icon: "/images/icon-menu-deco.svg",
+      disabled: true,
+    },
+    {
+      key: "patternId",
+      step: "Step 03",
+      label: "Choose Pattern",
+      options: pattern,
+      icon: "/images/icon-menu-themes.svg",
+      disabled: true,
+    },
+  ].map((item) => (
+    <div
+      key={item.key}
+      style={{
+        color: "#000",
+        opacity: item.disabled ? 0.5 : 1,
+        position: "relative",
+        marginRight: "16px",
+        width: "160px", // adjust if needed
+      }}
+    >
+      <div>
+        {item.step}
+        <sup style={{ color: "red" }}>
+          {item.step === "Step 01"
+            ? " *"
+            : item.step === "Step 02" || item.step === "Step 03"
+            ? " (Optional)"
+            : ""}
+        </sup>
+      </div>
+
+      <div
+        onClick={() => !item.disabled && setActiveOption(item.key)}
+        className={`p-2 rounded cursor-pointer ${
+          activeOption === item.key ? "activeColor" : "defaultColor"
+        }`}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          gap: "8px",
+          fontSize: "14px",
+          position: "relative",
+          pointerEvents: item.disabled ? "none" : "auto",
+        }}
+      >
+        <Image
+          src={item.icon}
+          alt=""
+          height={60}
+          width={60}
+          className={`p-2 rounded cursor-pointer ${
+            activeOption === item.key ? "activeImg" : "defaultImg"
+          }`}
+        />
+        {item.label}
+
+        {/* Show Coming Soon overlay if disabled */}
+        {item.disabled && (
+          <div
+            className="absolute inset-0 bg-white/80 flex items-center justify-center rounded"
+            style={{ zIndex: 10 }}
+          >
+            <span className="text-[12px] text-black font-semibold">
+              Coming Soon
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  ))}
+</div>
+
 </div>
 
        
@@ -350,7 +399,7 @@ const handleCheckout = async () => {
           
 </div>
 <div className="flex-1">
-   <span
+   {/* <span
    style={{
     color:"#000"
    }}>
@@ -363,20 +412,33 @@ const handleCheckout = async () => {
      (Optional) 
    
  
- 
  </sup>
-        </span>
-  <input
-          type="file"
-          value={options.pic}
-          onChange={(e) => setOptions({ ...options, pic: e.target.value })}
-          placeholder="Enter pic image URL"
-          className="border p-2 my-2 w-full"
-          style={{
-            border:"1px solid #000",
-            color:"#000"
-          }}
-        /></div>
+  <span>T&C</span>
+
+        </span> */}
+ <label
+  htmlFor="logo-upload"
+  className="block mb-1 text-sm font-medium text-black"
+>
+  Choose logo (only two colors)
+</label>
+<input
+  id="logo-upload"
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    if (e.target.files?.[0]) {
+      const fileURL = URL.createObjectURL(e.target.files[0]);
+      setOptions({ ...options, pic: fileURL });
+    }
+  }}
+  className="border p-2 my-2 w-full"
+  style={{
+    border: "1px solid #000",
+    color: "#000"
+  }}
+/>
+        </div>
 
 
 </div>
@@ -485,17 +547,21 @@ Size
         )}
 
         {/* Draggable Text */}
-        {options.text && (
-          <Draggable nodeRef={textRef as any} bounds="parent">
-            <div
-              ref={textRef}
-              className="absolute   text-black font-bold bg-black/50 px-3 py-1 rounded cursor-move"
-              style={{ fontSize: `${textSize}px` }}
-            >
-              {options.text}
-            </div>
-          </Draggable>
-        )}
+     {options.text && (
+  <Draggable nodeRef={textRef as any} bounds="parent">
+    <div
+      ref={textRef}
+      className="absolute text-black font-bold cursor-move"
+      style={{
+        fontSize: `${textSize}px`,
+        background: "transparent",
+        padding: "2px 4px",
+      }}
+    >
+      {options.text}
+    </div>
+  </Draggable>
+)}
 
         {/* Picture URL */}
         {options.pic && (
